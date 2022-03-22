@@ -16,15 +16,14 @@ router.post("/posting", async (req, res) => {
 
     const {Name, Pw, Title, Content} = req.body
 
-    const now = new Date(); // 현재 시간
-    const utcNow = now.getTime() + (now.getTimezoneOffset() * 60 * 1000); // 현재 시간을 utc로 변환한 밀리세컨드값
-    const koreaTimeDiff = 9 * 60 * 60 * 1000; // 한국 시간은 UTC보다 9시간 빠름(9시간의 밀리세컨드 표현)
-    const NowDate = new Date(utcNow + koreaTimeDiff); // utc로 변환된 값을 한국 시간으로 변환시키기 위해 9시간(밀리세컨드)를 더함
-
+    const moment = require('moment'); 
+    require('moment-timezone'); 
+    moment.tz.setDefault("Asia/Seoul"); 
+    const NowDate = String(moment().format('YYYY-MM-DD HH:mm:ss')); 
 
 
     const PostId = CryptoJS.SHA256(NowDate)['words'][0];
-
+    console.log(PostId)
     const existPostId = await Posters.find({ PostId });
     
     // 같은 ID가 DB에 있다면  
