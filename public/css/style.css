@@ -1,0 +1,17 @@
+* {
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: 20px;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+.head {
+    margin-bottom: 15px;
+}
+
+.수정버튼 {
+    margin-left: 30px;
+}
+
