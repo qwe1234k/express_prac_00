@@ -18,7 +18,6 @@ router.get("/detail", async (req, res) => {
 // 상세페이지 데이터 내려주기
 router.get("/detail/detailData", async (req, res) => {
     const PostId = req.query.PostId;
-
     const detail_info = await Posters.find({ PostId });
     res.json(detail_info);
 });

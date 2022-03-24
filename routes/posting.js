@@ -7,13 +7,11 @@ const CryptoJS = require("crypto-js")
 // 게시글 작성페이지 내려주기
 router.get("/posting", (req, res) => {
     const path = require("path")
-
     res.sendFile(path.join(__dirname + '/../public/posting.html'))
 })
 
 // 클라에서입력한 정보 >> DB로 올리기
 router.post("/posting", async (req, res) => {
-
     const {Name, Pw, Title, Content} = req.body
 
     const moment = require('moment'); 
@@ -21,14 +19,13 @@ router.post("/posting", async (req, res) => {
     moment.tz.setDefault("Asia/Seoul"); 
     const NowDate = String(moment().format('YYYY-MM-DD HH:mm:ss')); 
 
-
     const PostId = CryptoJS.SHA256(NowDate)['words'][0];
     console.log(PostId)
     const existPostId = await Posters.find({ PostId });
     
     // 같은 ID가 DB에 있다면  
     if (existPostId.length) {
-    return res.json({ msg: "예상치 못한 오류입니다." })
+        return res.json({ msg: "예상치 못한 오류입니다." })
       }
 
     res.json({ msg: "게시글이 등록이 완료되었습니다!" })
@@ -38,7 +35,6 @@ router.post("/posting", async (req, res) => {
 // 게시글 수정페이지html 내려주기
 router.get("/edit", (req, res) => {
     const path = require("path")
-
     res.sendFile(path.join(__dirname + '/../public/edit.html'))
 })
 
@@ -46,7 +42,6 @@ router.get("/edit", (req, res) => {
 router.get("/edit/Data", async (req, res) => {
     const PostId = req.query.PostId;
     const detail_info = await Posters.find({ PostId });
-
     res.json(detail_info);
 });
 
