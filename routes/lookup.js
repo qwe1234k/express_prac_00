@@ -2,7 +2,7 @@ const express = require("express");
 const Posters = require("../schemas/poster")
 const router = express.Router();
 
-// 전체페이지 클라에 내려주기
+// 전체페이지 데이터 내려주기
 router.get("/total", async (req, res) => {
     const total_ls = await Posters.find({});
     const sorted_total_ls = total_ls.sort( (a, b) => a.NowDate > b.NowDate ? -1 : 1)

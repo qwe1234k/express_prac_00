@@ -15,113 +15,126 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <title>수정중!!</title>
+    <title>댓글 수정중!!</title>
     <script>
         $(document).ready(function () {
             call_raw_info();
         });
 
-        // 게시글 원본정보 뿌려주기
+        // 댓글 원본정보 뿌려주기
         function call_raw_info() {
             // PostId가 동일한 게시글을 받아오기
             let PostId = new URLSearchParams(location.search).get('PostId')
-            
+            let CommentId = new URLSearchParams(location.search).get('CommentId')
+
             $.ajax({
-            type: 'GET',
-            url: `/api/edit/Data?PostId=${PostId}`,
-            dataType: 'json',
-            data: {},
+                type: 'GET',
+                url: `/api/updateCommentData?PostId=${PostId}&CommentId=${CommentId}`,
+                dataType: 'json',
+                data: {},
 
                 success: function (response) {
                 let raws = response
 
-                    for (i = 0; i < raws.length; i++) {
-                        let Name = raws[i]["Name"]
-                        let Title = raws[i]["Title"]
-                        let Content = raws[i]["Content"]
-                        let PostId = raws[i]["PostId"]
+                for (i = 0; i < raws.length; i++) {
+                    let Comment = raws[i]["Comment"]
+                    let CommentId = raws[i]["CommentId"]
+                    let UserId = raws[i]["UserId"]
+                    let PostId = raws[i]["PostId"]
+                    let NowDate = raws[i]["NowDate"]
 
-                        let temp_html = `<form style="margin: 30px 300px;">
-                                            <div class="mb-3" style="width: 50%; float: left" >
-                                                <label for="exampleFormControlInput1" class="form-label">닉네임</label>
-                                                <input class="form-control" id="Name" placeholder="Nickname" value="${Name}">
-                                            </div>
-                                            <div class="mb-3" style="width: 50%; float: right" >
-                                                <label for="exampleFormControlInput2" class="form-label">비밀번호</label>
-                                                <input class="form-control" id="Pw" placeholder="Password">
-                                            </div>
-                                            <div class="mb-3" >
-                                                <label for="exampleFormControlInput1" class="form-label">제목</label>
-                                                <input class="form-control" id="Title" placeholder="Title" value="${Title}">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="exampleFormControlTextarea1" class="form-label">글 내용</label>
-                                                <textarea class="form-control" id="Content" rows="3">${Content}</textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-success" onclick="updatePosting()">수정 완료하기</button>
-                                            <button type="submit" class="btn btn-danger" onclick="delPosting()" style="margin-left:20px;">삭제 완료하기</button>
-                                            <button type="button" class="btn btn-warning" onclick="location.href='/'" style="margin-left:20px;">취소</button>
-                                        </form>`
-                        
-                        $('#editRawInfo').append(temp_html)                
+                    let temp_html = `<form style="margin: 30px 300px;">
+                                        <div class="mb-3">
+                                            <label for="exampleFormControlInput1" class="form-label">닉네임 : </label>
+                                            <label for="exampleFormControlInput1" class="form-label">${UserId}</label>
+                                        </div>
+                                        <div class="mb-3" >
+                                            <label for="exampleFormControlInput1" class="form-label">작성날짜 : </label>
+                                            <label for="exampleFormControlInput1" class="form-label">${NowDate}</label>
+                                        </div>
+                                        <p></P>
+                                        <div class="mb-3">
+                                            <label for="exampleFormControlTextarea1" class="form-label">댓글 내용</label>
+                                            <textarea class="form-control" id="Content" rows="3">${Comment}</textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success" onclick="updateComment()">수정 완료하기</button>
+                                        <button type="submit" class="btn btn-danger" onclick="confirmComment()" style="margin-left:20px;">삭제 완료하기</button>
+                                        <button type="button" class="btn btn-warning" onclick="location.href='/'" style="margin-left:20px;">취소</button>
+                                    </form>`
+                    
+                    $('#editRawInfo').append(temp_html)                
                     }
                 }
             })
         }
-        
-        // 게시글 삭제하기
-        function delPosting() {
-            // PostId가 동일한 게시글을 받아오기
+
+        // 댓글 수정하기
+        function updateComment() {
             let PostId = new URLSearchParams(location.search).get('PostId')
-            let Pw = $('#Pw').val()
+            let CommentId = new URLSearchParams(location.search).get('CommentId')
+            let Comment = $("#Content").val()
+
+            let myURL = new URLSearchParams(location.search)
 
             $.ajax({
                 type: 'POST',
-                url: '/api/delete',
+                url: '/api/updateComment',
                 contentType: "application/json",
-                data: JSON.stringify(
-                    {PostId: PostId,
-                    Pw: Pw}
-                    ),
+                xhrFields: { withCredentials: true },
+                data: JSON.stringify({ 
+                    CommentId: CommentId,
+                    PostId: PostId,
+                    Comment: Comment,
+                }),
 
-                success: function (response) {
+                success: async function (response) {
                     alert(response["msg"])
-                    document.location.href="/"
+                    window.location = document.referrer; //뒤로가고 새로고침
+                },
+
+                error: function (err) {
+                    alert(response["실패했어요"])
                 }
             })
 
         }
         
-        // 게시글 수정하기
-        function updatePosting() {
-            // PosiId가 동일한 게시글을 받아오기 (계정인증)
+        // 댓글 삭제하기
+        function deleteComment() {
             let PostId = new URLSearchParams(location.search).get('PostId')
-            let Pw = $('#Pw').val()
-
-            // 수정내용 변수화 하기
-            let Title = $('#Title').val();
-            let Content = $('#Content').val();
-
+            let CommentId = new URLSearchParams(location.search).get('CommentId')
 
             $.ajax({
                 type: 'POST',
-                url: '/api/edit',
+                url: '/api/deleteComment',
                 contentType: "application/json",
-                data: JSON.stringify(
-                    {PostId: PostId,
-                    Pw: Pw,
-                    Title: Title,
-                    Content: Content
-                    }
-                    ),
+                xhrFields: { withCredentials: true },
+                data: JSON.stringify({ 
+                    CommentId: CommentId,
+                    PostId: PostId,
+                    Comment: Comment,
+                }),
 
                 success: function (response) {
                     alert(response["msg"])
-                    document.location.href="/"
+                    window.location = document.referrer; //뒤로가고 새로고침
+                },
+                error: function (err) {
+                    alert(response["실패했어요"])
                 }
             })
+
         }
-    </script>
+   
+        // 삭제시 예/아니요 물어보기 함수
+        function confirmComment() {
+            if (confirm("정말로 해당 댓글을 삭제하시겠습니까?")) {
+                deleteComment()
+        } else {
+            alert("취소(아니오)를 누르셨습니다.");
+        }
+        }
+   </script>
 </head>
 
 <body>

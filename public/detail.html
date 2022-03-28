@@ -17,14 +17,13 @@
     <script>
         $(document).ready(function () {
             call_detail();
+            call_comment();
         });
 
         function call_detail() {
-            // let url_str = window.location.href;
-            // let url = new URL(url_str);
-
             //이 페이지가 랜딩되고 있는 url의 쿼리스트링 가져오기
             let PostId = new URLSearchParams(location.search).get('PostId')
+
             $.ajax({
                 type: 'GET',
                 url: `/api/detail/detailData?PostId=${PostId}`,
@@ -41,8 +40,9 @@
                         let Name = rows[i]["Name"]
                         let Pw = rows[i]["Pw"]
 
-                        
-                let temp_html = `<!-- 제목, 작성자, 작성시간 -->
+                        let temp_html = `<!-- 제목, 작성자, 작성시간 -->
+                                    <button type="button" class="btn btn-primary" onclick="location.href='/'" style="margin-top:20px;">홈으로 가기</button>
+                                    <p></p>
                                     <div class="card" style="width: 1300px;">
                                         <div class="card-body">
                                             <h5 class="card-title"> 글제목 : ${Title}</h5>
@@ -52,15 +52,18 @@
                                     </div>
                                     <hr style="height: 4px; background: blue; width: 1300px;">
 
+                                    <p></p>
+
                                     <!-- 내용 -->
                                     <div class="card" style="width: 1300px;">
                                         <div class="card-body" style="padding: 15px">
                                             ${Content}
                                         </div>
                                     </div>
+                                    <hr style="height: 4px; background: blue; width: 1300px;">
 
-                                    <button type="button" class="btn btn-warning" onclick="location.href='/'" style="margin-top:20px;">취소</button>
-`
+                                    
+                                `
 
                 $('#detailAppend').append(temp_html)
                     }
@@ -69,6 +72,122 @@
     )
     }
 
+        // 완료
+        function call_comment() {
+            //이 페이지가 랜딩되고 있는 url의 쿼리스트링 가져오기
+            let PostId = new URLSearchParams(location.search).get('PostId')
+
+            $.ajax({
+                type: 'GET',
+                url: `/api/lookupComment?PostId=${PostId}`,
+                contentType: "application/json",
+                data: {},
+
+                success: function (response) {
+                    let raw = response
+                    for (let i = 0; i < raw.length; i++) {
+                        let UserId = raw[i]['UserId'];
+                        let Comment = raw[i]['Comment'];
+                        let CommentId = raw[i]['CommentId']
+                        let NowDate = raw[i]['NowDate'];
+
+                        let temp_html = `
+                                    <!-- 댓글 시작 -->
+                                    <div class="card" style="width: 1300px; padding: 15px;">
+                                        <div class="row">
+                                            <!-- 내용 -->
+                                            <div class="col-lg-3">
+                                                <div class="card-body">
+                                                ${Comment}
+                                                </div>
+                                            </div>
+
+                                            <!-- 공백 -->
+                                            <div class="col-lg-1">
+                                     
+                                            </div>
+
+                                            <!-- 이름 -->
+                                            <div class="col-lg-2">
+                                                작성자: ${UserId}
+                                            </div>
+
+                                            <!-- 날짜 -->
+                                            <div class="col-lg-3" id="Date">
+                                                작성일자: ${NowDate}
+                                            </div>
+
+                                            <!-- 댓글ID -->
+                                            <div class="col-lg-1" id="${CommentId}">
+                                                댓글 고유ID: ${CommentId}
+                                            </div>
+
+                                            <!-- 버튼 -->
+                                            <div class="col-lg-2" style="padding: 15px; margin: auto">
+                                                <button type="button" class="btn btn-warning" onclick="update_comment_auth(${CommentId})">수정</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p></p>
+                                    `
+                                
+                            $('#commentAppend').append(temp_html)   
+                    }
+                }})
+
+        }
+
+        // 완료
+        function posting_comment_auth() {
+            let PostId = new URLSearchParams(location.search).get('PostId')
+            let Comment = $("#Comment").val()
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/postingComment',
+                contentType: "application/json",
+                xhrFields: { withCredentials: true },
+                data: JSON.stringify({ 
+                    Comment: Comment,
+                    PostId: PostId,
+                }),
+
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(jqXHR.responseText)
+                    window.location.reload()
+                }
+            })
+
+            }
+        
+        // 댓글수정기능 // 인증미들웨어에 콜하기
+        function update_comment_auth(CommentId) {
+            let PostId = new URLSearchParams(location.search).get('PostId')
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/updateCommentAuth',
+                contentType: "application/json",
+                xhrFields: { withCredentials: true },
+                data: JSON.stringify({ 
+                    CommentId: CommentId,
+                    PostId: PostId,
+                }),
+
+                success: function (response) {
+                    alert("성공했엉 이제 수정하러 가보자")
+                    document.location.href=`/api/updateComment?CommentId=${CommentId}&PostId=${PostId}`
+                },
+                error: function (err) {
+                    alert(response["실패했어요"])
+                }
+            })
+        }
+        
     </script>
 </head>
 
@@ -88,6 +207,19 @@
 
     </div>
 
+    <!-- 댓글 창 -->
+    <div style="margin: 30px 300px;" id="commentAppend">
+
+    </div>
+
+    <!-- 댓글 작성 -->
+    <div class="mb-3" style="margin: 30px 300px;">
+        <label for="exampleFormControlTextarea1" class="form-label">댓글 달기</label>
+        <textarea class="form-control" rows="3" id="Comment"></textarea>
+        <button type="button" class="btn btn-success" onclick="posting_comment_auth()" style="margin-top:20px;">등록</button>
+    </div>
+
+    <!-- Footer -->
     <div class="container">
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
           <div class="col-md-4 d-flex align-items-center">
@@ -97,7 +229,7 @@
             <span class="text-muted">&copy; 2022 먼가 있어보이게 하기...</span>
           </div>
         </footer>
-      </div>
+    </div>
 </body>
 
 </html>

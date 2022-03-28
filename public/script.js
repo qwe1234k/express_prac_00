@@ -15,6 +15,9 @@
 // const date = moment().format('YYYY-MM-DD HH:mm:ss'); 
 // console.log(date);
 
+
+// 0. promise의 status: pending(보류상태), fulfilled --> resolve작동, reject --> reject작동
+
 // 1. Producer
 const promise = new Promise((resolve, reject) => {
     console.log('doing something'); //executor라는 cb함수에 인자로 들어가서 promise객체를 호출시 바로 실행됨
@@ -35,3 +38,5 @@ promise
 .finally(()=>{
     console.log('마지막')
 })
+
+
