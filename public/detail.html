@@ -17,9 +17,15 @@
     <script>
         $(document).ready(function () {
             call_detail();
-            call_comment();
+            if (!document.cookie) {
+                call_comment();
+            }
+            else {
+                call_comment_loginUser();
+            }
         });
 
+        // 상세페이지 data 받아오기
         function call_detail() {
             //이 페이지가 랜딩되고 있는 url의 쿼리스트링 가져오기
             let PostId = new URLSearchParams(location.search).get('PostId')
@@ -72,8 +78,73 @@
     )
     }
 
-        // 완료
+        // 특정상세페이지의 댓글data 받아오기 (비로그인 유저용)
         function call_comment() {
+            //이 페이지가 랜딩되고 있는 url의 쿼리스트링 가져오기
+            let PostId = new URLSearchParams(location.search).get('PostId')
+
+            $.ajax({
+                type: 'GET',
+                url: `/api/lookupComment?PostId=${PostId}`,
+                contentType: "application/json",
+                data: {},
+
+                success: function (response) {
+                    console.log(document.cookie)
+                    let raw = response
+                    for (let i = 0; i < raw.length; i++) {
+                        let UserId = raw[i]['UserId'];
+                        let Comment = raw[i]['Comment'];
+                        let CommentId = raw[i]['CommentId']
+                        let NowDate = raw[i]['NowDate'];
+
+                        let temp_html = `
+                                    <!-- 댓글 시작 -->
+                                    <div class="card" style="width: 1300px; padding: 15px;">
+                                        <div class="row">
+                                            <!-- 내용 -->
+                                            <div class="col-lg-3">
+                                                <div class="card-body">
+                                                ${Comment}
+                                                </div>
+                                            </div>
+
+                                            <!-- 공백 -->
+                                            <div class="col-lg-1">
+                                     
+                                            </div>
+
+                                            <!-- 이름 -->
+                                            <div class="col-lg-2">
+                                                작성자: ${UserId}
+                                            </div>
+
+                                            <!-- 날짜 -->
+                                            <div class="col-lg-3" id="Date">
+                                                작성일자: ${NowDate}
+                                            </div>
+
+                                            <!-- 댓글ID -->
+                                            <div class="col-lg-1" id="${CommentId}">
+                                                댓글 고유ID: ${CommentId}
+                                            </div>
+
+                                            <!-- 버튼 -->
+                                            <div class="col-lg-2" style="padding: 15px; margin: auto">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p></p>
+                                    `
+                                
+                            $('#commentAppend').append(temp_html)   
+                    }
+                }})
+
+        }
+
+        // 특정상세페이지의 댓글data 받아오기 (로그인 유저용)
+        function call_comment_loginUser() {
             //이 페이지가 랜딩되고 있는 url의 쿼리스트링 가져오기
             let PostId = new URLSearchParams(location.search).get('PostId')
 
@@ -137,7 +208,7 @@
 
         }
 
-        // 완료
+        // 댓글 등록하기 // 인증미들웨어에 콜하기
         function posting_comment_auth() {
             let PostId = new URLSearchParams(location.search).get('PostId')
             let Comment = $("#Comment").val()
@@ -183,7 +254,7 @@
                     document.location.href=`/api/updateComment?CommentId=${CommentId}&PostId=${PostId}`
                 },
                 error: function (err) {
-                    alert(response["실패했어요"])
+                    alert("권한이 없습니다.")
                 }
             })
         }

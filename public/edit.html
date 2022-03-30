@@ -94,14 +94,13 @@
         
         // 게시글 수정하기
         function updatePosting() {
-            // PosiId가 동일한 게시글을 받아오기 (계정인증)
+            // PostId가 동일한 게시글을 받아오기 (계정인증)
             let PostId = new URLSearchParams(location.search).get('PostId')
             let Pw = $('#Pw').val()
 
             // 수정내용 변수화 하기
             let Title = $('#Title').val();
             let Content = $('#Content').val();
-
 
             $.ajax({
                 type: 'POST',

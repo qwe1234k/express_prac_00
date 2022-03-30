@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prettify": "prettier --write *.js **/*.js"
   },
   "author": "",
   "license": "ISC",
@@ -23,5 +23,8 @@
     "mongoose": "^6.2.7",
     "nodemon": "^2.0.15",
     "p5": "^1.4.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.6.1"
   }
 }
