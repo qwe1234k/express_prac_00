@@ -175,7 +175,7 @@ router.post('/updateComment', async (req, res) => {
 
 // 댓글 삭제하기
 router.post('/deleteComment', async (req, res) => {
-  const { CommentId, PostId, Comment } = req.body;
+  const { CommentId, PostId } = req.body;
 
   // 현재시간 생성
   const moment = require('moment');
@@ -196,5 +196,15 @@ router.post('/deleteComment', async (req, res) => {
   res.json({ msg: '댓글 삭제가 완료되었습니다.' });
   await CommentDB.deleteOne({ CommentId });
 });
+
+// 토큰 검증하기
+router.get('/token', authMiddleware, (req, res) => {
+  // 사용자 브라우저에서 보낸 쿠키를 인증미들웨어통해 user변수 생성
+  // 원본: NickName: ##, Pw: ##, _id: ##,
+  // 수정: token: ##
+  const { token } = res.locals; 
+  console.log(token)
+  res.json({token})
+})
 
 module.exports = router;

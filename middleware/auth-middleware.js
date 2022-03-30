@@ -5,7 +5,7 @@ const myKey = fs.readFileSync(__dirname + '/key.txt').toString();
 
 module.exports = (req, res, next) => {
   const tokenValue = req.cookies.token;
-  
+
   try {
     const userNickName = jwt.verify(tokenValue, myKey);
     const userId = userNickName.NickName;
@@ -15,6 +15,7 @@ module.exports = (req, res, next) => {
       .exec()
       .then((user) => {
         res.locals.user = user;
+        res.locals.token = tokenValue
         next();
       });
   } catch (error) {
