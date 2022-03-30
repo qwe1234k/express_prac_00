@@ -15,39 +15,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>상세페이지</title>
     <script>
-        var tokenValue =
-
-
         $(document).ready(function () {
-            token();
             call_detail();
-            if (tokenValue[0].cookie.replace("token=", "") == document.cookie.replace("token=", "")) {
+
+            if (document.cookie) {
                 call_comment_loginUser();
-                alert("로그인 유저가 맞습니다.")
             }
             else {
                 call_comment();
-                alert("로그인 유저가 아닙니다.")
-
             }
         });
-
-        // 토큰검증
-        function token() {
-            $.ajax({
-                type: 'GET',
-                url: '/api/token?hi=123',
-                dataType: 'json',
-                data: {},
-
-                success: function (response) {
-                    tokenValue = response.token
-                }
-            })
-            return tokenValue
-        }
-        
-    
 
         // 상세페이지 data 받아오기
         function call_detail() {
@@ -219,7 +196,7 @@
 
                                             <!-- 버튼 -->
                                             <div class="col-lg-2" style="padding: 15px; margin: auto">
-                                                <button type="button" class="btn btn-warning" onclick="update_comment_auth(${CommentId})">수정</button>
+                                                <button type="button" class="btn btn-warning" onclick="update_comment_auth( ${CommentId}, '${UserId}' )">수정</button>
                                             </div>
                                         </div>
                                     </div>
@@ -260,7 +237,7 @@
             }
         
         // 댓글수정기능 // 인증미들웨어에 콜하기
-        function update_comment_auth(CommentId) {
+        function update_comment_auth(CommentId, UserId) {
             let PostId = new URLSearchParams(location.search).get('PostId')
 
             $.ajax({
@@ -271,18 +248,20 @@
                 data: JSON.stringify({ 
                     CommentId: CommentId,
                     PostId: PostId,
+                    UserId: UserId
                 }),
 
                 success: function (response) {
                     alert("성공했엉 이제 수정하러 가보자")
                     document.location.href=`/api/updateComment?CommentId=${CommentId}&PostId=${PostId}`
                 },
-                error: function (err) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     alert("권한이 없습니다.")
-                }
+                    window.location.reload()
+                },
+            
             })
         }
-        
     </script>
 </head>
 

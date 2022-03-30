@@ -1,6 +1,7 @@
 const express = require('express');
 const Posters = require('../schemas/poster');
 const CommentDB = require('../schemas/comment');
+const SignUpDB = require('../schemas/signUp')
 const router = express.Router();
 const CryptoJS = require('crypto-js');
 const authMiddleware = require('../middleware/auth-middleware');
@@ -125,12 +126,15 @@ router.get('/lookupComment', async (req, res) => {
 
 // 댓글 수정버튼 누르면 인증미들웨어로 보내서 검증하기
 router.post('/updateCommentAuth', authMiddleware, async (req, res) => {
-  // const { CommentId, PostId } = req.body
+  const { UserId } = req.body
+  const myLoginId = res.locals.user.NickName
+  
+  console.log( UserId, myLoginId )
 
-  // 사용자 브라우저에서 보낸 쿠키를 인증미들웨어통해 user변수 생성
-  // const { user } = res.locals // NickName: ##, Pw: ##, _id: ##
+  if (myLoginId !== UserId) {
+    return res.status(400).send("실패!");
+  }
 
-  // console.log({ CommentId, PostId, user })
   res.send('인정합니당');
 });
 
@@ -196,15 +200,5 @@ router.post('/deleteComment', async (req, res) => {
   res.json({ msg: '댓글 삭제가 완료되었습니다.' });
   await CommentDB.deleteOne({ CommentId });
 });
-
-// 토큰 검증하기
-router.get('/token', authMiddleware, (req, res) => {
-  // 사용자 브라우저에서 보낸 쿠키를 인증미들웨어통해 user변수 생성
-  // 원본: NickName: ##, Pw: ##, _id: ##,
-  // 수정: token: ##
-  const { token } = res.locals; 
-  console.log(token)
-  res.json({token})
-})
 
 module.exports = router;
