@@ -1,2 +1,9 @@
 node_modules
 key.txt
+config
+migrations
+models
+seeders
+private.key
+ca_bundle.crt
+certificate.crt

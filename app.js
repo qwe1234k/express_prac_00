@@ -1,7 +1,25 @@
 const express = require('express');
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
+
+const app_low = express();
 const app = express();
-const port = 8080;
 const router = express.Router();
+
+// 인증서 파트
+const privateKey = fs.readFileSync(__dirname+"/private.key", "utf8");
+const certificate = fs.readFileSync(__dirname+"/certificate.crt", "utf8")
+const ca = fs.readFileSync(__dirname+"/ca_bundle.crt", "utf8")
+const credentials = {
+  key: privateKey,
+  cert: certificate,
+  ca: ca
+};
+
+// 포트 설정
+const httpPort = 80;
+const httpsPort = 443;
 
 // 스키마 연결
 const connect = require('./schemas/index');
@@ -22,6 +40,18 @@ const signInRouter = require('./routes/signIn');
 
 // 클라가 보낸 쿠키 Parser 하기
 const cookieParser = require('cookie-parser');
+
+// HTTPS 리다이렉션 하기
+// app_low : http전용 미들웨어
+app_low.use((req, res, next) => {
+  if (req.secure) {
+    next();
+  } else {
+    const to = `https://${req.hostname}:${httpsPort}${req.url}`;
+    console.log(to);
+    res.redirect(to);
+  }
+});
 
 // cors 해결하기
 const cors = require('cors');
@@ -51,7 +81,15 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-// 서버열기
-app.listen(port, () => {
-  console.log('서버가 켜졌어요!');
+http.createServer(app_low).listen(httpPort, () => {
+  console.log('http서버가 켜졌어요!');
 });
+
+https.createServer(credentials, app).listen(httpsPort, () => {
+  console.log('https서버가 켜졌어요!')
+});
+
+// 서버열기
+// app.listen(httpPort, () => {
+//   console.log('http서버가 켜졌어요!');
+// });
